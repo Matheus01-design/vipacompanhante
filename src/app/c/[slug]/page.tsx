@@ -1,14 +1,15 @@
-'use client'
-import { useState, useEffect } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import { MapPin, Camera, ArrowLeft } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { notFound } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import CategoriaCliente from './CategoriaCliente'
 
 const COR = '#8B0000'
+const BASE_URL = 'https://www.vipacompanhante.com'
 
-const TODOS_ESTADOS: {[key: string]: string} = {
-  'ac': 'Acre', 'al': 'Alagoas', 'ap': 'Amapá', 'am': 'Amazonas', 
+const TODOS_ESTADOS: { [key: string]: string } = {
+  'ac': 'Acre', 'al': 'Alagoas', 'ap': 'Amapá', 'am': 'Amazonas',
   'ba': 'Bahia', 'ce': 'Ceará', 'df': 'Distrito Federal', 'es': 'Espírito Santo',
   'go': 'Goiás', 'ma': 'Maranhão', 'mt': 'Mato Grosso', 'ms': 'Mato Grosso do Sul',
   'mg': 'Minas Gerais', 'pa': 'Pará', 'pb': 'Paraíba', 'pr': 'Paraná',
@@ -17,92 +18,76 @@ const TODOS_ESTADOS: {[key: string]: string} = {
   'sp': 'São Paulo', 'se': 'Sergipe', 'to': 'Tocantins'
 }
 
-// Mapeamento de slugs para filtros
-const FILTROS_CABELO: {[key: string]: string} = {
-  'loiras': 'Loira',
-  'morenas': 'Morena',
-  'ruivas': 'Ruiva',
-  'negras': 'Preto',
-  'castanhas': 'Castanho',
-  'coloridas': 'Colorido'
+const FILTROS_CABELO: { [key: string]: string } = {
+  'loiras': 'Loira', 'morenas': 'Morena', 'ruivas': 'Ruiva',
+  'negras': 'Preto', 'castanhas': 'Castanho', 'coloridas': 'Colorido'
 }
-
-const FILTROS_ETNIA: {[key: string]: string} = {
-  'brancas': 'Branca',
-  'morenas': 'Morena',
-  'negras': 'Negra',
-  'mulatas': 'Mulata',
-  'asiaticas': 'Asiática',
-  'latinas': 'Latina'
+const FILTROS_ETNIA: { [key: string]: string } = {
+  'brancas': 'Branca', 'morenas': 'Morena', 'negras': 'Negra',
+  'mulatas': 'Mulata', 'asiaticas': 'Asiática', 'latinas': 'Latina'
 }
-
-const FILTROS_CORPO: {[key: string]: string} = {
-  'magras': 'Magra',
-  'slim': 'Slim',
-  'atleticas': 'Atlética',
-  'curvilineas': 'Curvilínea',
-  'gordinhas': 'Normal'
+const FILTROS_CORPO: { [key: string]: string } = {
+  'magras': 'Magra', 'slim': 'Slim', 'atleticas': 'Atlética',
+  'curvilineas': 'Curvilínea', 'gordinhas': 'Normal'
 }
-
-const FILTROS_ESPECIAIS: {[key: string]: {campo: string, valor: any}} = {
+const FILTROS_ESPECIAIS: { [key: string]: { campo: string, valor: any } } = {
   'com-local': { campo: 'tem_local', valor: true },
   'verificadas': { campo: 'verificado', valor: true },
   'super-vip': { campo: 'plano', valor: 'super_vip' },
   'vip': { campo: 'plano', valor: 'vip' },
-  'novas': { campo: 'novas', valor: true } // Últimos 7 dias
+  'novas': { campo: 'novas', valor: true },
+}
+const FILTROS_SEIOS: { [key: string]: string } = {
+  'seios-pequenos': 'Pequenos', 'seios-medios': 'Médios',
+  'seios-grandes': 'Grandes', 'seios-silicone': 'Silicone'
 }
 
-const FILTROS_SEIOS: {[key: string]: string} = {
-  'seios-pequenos': 'Pequenos',
-  'seios-medios': 'Médios',
-  'seios-grandes': 'Grandes',
-  'seios-silicone': 'Silicone'
+interface ParsedSlug {
+  filtros: any
+  estado?: string
+  caracteristica: string
+  titulo: string
+  descricao: string
+  valido: boolean
 }
 
-function parseSlug(slug: string): { filtros: any, estado?: string, cidade?: string, titulo: string, descricao: string } {
+function parseSlug(slug: string): ParsedSlug {
   const partes = slug.toLowerCase().split('-')
   const filtros: any = {}
   let estado: string | undefined
-  let cidade: string | undefined
-  let caracteristica = ''
-  
-  // Tentar encontrar estado no final (2 letras)
+
   const ultimaParte = partes[partes.length - 1]
   if (ultimaParte.length === 2 && TODOS_ESTADOS[ultimaParte]) {
     estado = ultimaParte.toUpperCase()
     partes.pop()
   }
-  
-  // Reconstruir a característica
-  caracteristica = partes.join('-')
-  
-  // Identificar tipo de filtro
-  if (FILTROS_CABELO[caracteristica]) {
-    filtros.cabelo = FILTROS_CABELO[caracteristica]
-  } else if (FILTROS_ETNIA[caracteristica]) {
-    filtros.etnia = FILTROS_ETNIA[caracteristica]
-  } else if (FILTROS_CORPO[caracteristica]) {
-    filtros.corpo = FILTROS_CORPO[caracteristica]
-  } else if (FILTROS_SEIOS[caracteristica]) {
-    filtros.seios = FILTROS_SEIOS[caracteristica]
-  } else if (FILTROS_ESPECIAIS[caracteristica]) {
+
+  const caracteristica = partes.join('-')
+  let valido = false
+
+  if (FILTROS_CABELO[caracteristica]) { filtros.cabelo = FILTROS_CABELO[caracteristica]; valido = true }
+  else if (FILTROS_ETNIA[caracteristica]) { filtros.etnia = FILTROS_ETNIA[caracteristica]; valido = true }
+  else if (FILTROS_CORPO[caracteristica]) { filtros.corpo = FILTROS_CORPO[caracteristica]; valido = true }
+  else if (FILTROS_SEIOS[caracteristica]) { filtros.seios = FILTROS_SEIOS[caracteristica]; valido = true }
+  else if (FILTROS_ESPECIAIS[caracteristica]) {
     const esp = FILTROS_ESPECIAIS[caracteristica]
     filtros[esp.campo] = esp.valor
+    valido = true
   }
-  
-  // Gerar título e descrição SEO
+
   const estadoNome = estado ? TODOS_ESTADOS[estado.toLowerCase()] : 'Brasil'
   let titulo = ''
   let descricao = ''
-  
+  const cap = caracteristica.charAt(0).toUpperCase() + caracteristica.slice(1)
+
   if (filtros.cabelo) {
-    titulo = `Acompanhantes ${caracteristica.charAt(0).toUpperCase() + caracteristica.slice(1)} em ${estadoNome}`
+    titulo = `Acompanhantes ${cap} em ${estadoNome}`
     descricao = `Encontre as melhores acompanhantes ${caracteristica} em ${estadoNome}. Fotos reais, perfis verificados e contato direto.`
   } else if (filtros.etnia) {
-    titulo = `Acompanhantes ${caracteristica.charAt(0).toUpperCase() + caracteristica.slice(1)} em ${estadoNome}`
+    titulo = `Acompanhantes ${cap} em ${estadoNome}`
     descricao = `As mais lindas acompanhantes ${caracteristica} em ${estadoNome}. Perfis completos com fotos e vídeos.`
   } else if (filtros.corpo) {
-    titulo = `Acompanhantes ${caracteristica.charAt(0).toUpperCase() + caracteristica.slice(1)} em ${estadoNome}`
+    titulo = `Acompanhantes ${cap} em ${estadoNome}`
     descricao = `Acompanhantes ${caracteristica} em ${estadoNome}. Encontre seu tipo ideal.`
   } else if (filtros.tem_local) {
     titulo = `Acompanhantes com Local Próprio em ${estadoNome}`
@@ -114,79 +99,102 @@ function parseSlug(slug: string): { filtros: any, estado?: string, cidade?: stri
     titulo = `Acompanhantes Super VIP em ${estadoNome}`
     descricao = `As melhores acompanhantes Super VIP em ${estadoNome}. Alto padrão e atendimento exclusivo.`
   } else if (filtros.seios) {
-    titulo = `Acompanhantes com ${FILTROS_SEIOS[caracteristica]} Seios em ${estadoNome}`
-    descricao = `Encontre acompanhantes com ${FILTROS_SEIOS[caracteristica].toLowerCase()} seios em ${estadoNome}.`
+    titulo = `Acompanhantes com Seios ${FILTROS_SEIOS[caracteristica]} em ${estadoNome}`
+    descricao = `Encontre acompanhantes com seios ${FILTROS_SEIOS[caracteristica].toLowerCase()} em ${estadoNome}.`
   } else {
     titulo = `Acompanhantes em ${estadoNome}`
     descricao = `Encontre acompanhantes em ${estadoNome}. Milhares de perfis disponíveis.`
   }
-  
-  return { filtros, estado, cidade, titulo, descricao }
+
+  return { filtros, estado, caracteristica, titulo, descricao, valido }
 }
 
-export default function PaginaSEO() {
-  const params = useParams()
-  const slug = params.slug as string
-  
-  const [perfis, setPerfis] = useState<any[]>([])
-  const [carregando, setCarregando] = useState(true)
-  const [pagina, setPagina] = useState(1)
-  const [temMais, setTemMais] = useState(true)
-  const [info, setInfo] = useState<{ titulo: string, descricao: string }>({ titulo: '', descricao: '' })
-  
-  const supabase = createClient()
-  
-  useEffect(() => {
-    if (slug) {
-      const parsed = parseSlug(slug)
-      setInfo({ titulo: parsed.titulo, descricao: parsed.descricao })
-      buscarPerfis(1, parsed)
-    }
-  }, [slug])
-  
-  async function buscarPerfis(p: number, parsed?: ReturnType<typeof parseSlug>) {
-    if (p === 1) setCarregando(true)
-    
-    const { filtros, estado } = parsed || parseSlug(slug)
-    
-    let query = supabase
-      .from('acompanhantes')
-      .select('id, slug, nome, cidade, estado, bairro, foto_capa, fotos, plano, verificado')
-      .eq('status', 'ativo')
-      .eq('sexo', 'mulher')
-      .not('foto_capa', 'is', null)
-    
-    // Aplicar filtros
-    if (estado) query = query.eq('estado', estado)
-    if (filtros.cabelo) query = query.eq('cabelo', filtros.cabelo)
-    if (filtros.etnia) query = query.eq('etnia', filtros.etnia)
-    if (filtros.corpo) query = query.eq('corpo', filtros.corpo)
-    if (filtros.seios) query = query.eq('seios', filtros.seios)
-    if (filtros.tem_local) query = query.eq('tem_local', true)
-    if (filtros.verificado) query = query.eq('verificado', true)
-    if (filtros.plano) query = query.eq('plano', filtros.plano)
-    if (filtros.novas) {
-      const seteDiasAtras = new Date()
-      seteDiasAtras.setDate(seteDiasAtras.getDate() - 7)
-      query = query.gte('criado_em', seteDiasAtras.toISOString())
-    }
-    
-    query = query
-      .order('plano', { ascending: false })
-      .order('id', { ascending: false })
-      .range((p - 1) * 24, p * 24 - 1)
-    
-    const { data } = await query
-    
-    if (p === 1) setPerfis(data || [])
-    else setPerfis(prev => [...prev, ...(data || [])])
-    
-    setTemMais((data || []).length === 24)
-    setCarregando(false)
+interface Props {
+  params: { slug: string }
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const parsed = parseSlug(params.slug)
+  const url = `${BASE_URL}/c/${params.slug}/`
+  return {
+    title: parsed.titulo,
+    description: parsed.descricao,
+    alternates: { canonical: url },
+    openGraph: {
+      title: parsed.titulo,
+      description: parsed.descricao,
+      url,
+      type: 'website',
+      siteName: 'VipAcompanhante',
+      locale: 'pt_BR',
+    },
+    robots: {
+      index: parsed.valido,
+      follow: true,
+    },
   }
-  
+}
+
+export default async function PaginaSEO({ params }: Props) {
+  const parsed = parseSlug(params.slug)
+  if (!parsed.valido) notFound()
+
+  const supabase = await createClient()
+  let query = supabase
+    .from('acompanhantes')
+    .select('id, slug, nome, cidade, estado, bairro, foto_capa, fotos, plano, verificado')
+    .eq('status', 'ativo')
+    .eq('sexo', 'mulher')
+    .not('foto_capa', 'is', null)
+
+  if (parsed.estado) query = query.eq('estado', parsed.estado)
+  if (parsed.filtros.cabelo) query = query.eq('cabelo', parsed.filtros.cabelo)
+  if (parsed.filtros.etnia) query = query.eq('etnia', parsed.filtros.etnia)
+  if (parsed.filtros.corpo) query = query.eq('corpo', parsed.filtros.corpo)
+  if (parsed.filtros.seios) query = query.eq('seios', parsed.filtros.seios)
+  if (parsed.filtros.tem_local) query = query.eq('tem_local', true)
+  if (parsed.filtros.verificado) query = query.eq('verificado', true)
+  if (parsed.filtros.plano) query = query.eq('plano', parsed.filtros.plano)
+  if (parsed.filtros.novas) {
+    const seteDiasAtras = new Date()
+    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7)
+    query = query.gte('criado_em', seteDiasAtras.toISOString())
+  }
+
+  query = query
+    .order('plano', { ascending: false })
+    .order('id', { ascending: false })
+    .range(0, 23)
+
+  const { data: perfisIniciais } = await query
+  const perfis = perfisIniciais || []
+
+  const url = `${BASE_URL}/c/${params.slug}/`
+
+  // Schema CollectionPage + ItemList
+  const schemaCollection = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: parsed.titulo,
+    description: parsed.descricao,
+    url,
+    numberOfItems: perfis.length,
+  }
+
+  const schemaBreadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Início', item: BASE_URL },
+      { '@type': 'ListItem', position: 2, name: parsed.titulo, item: url },
+    ],
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaCollection) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaBreadcrumb) }} />
+
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
         body{background:#f5f5f5;font-family:system-ui,-apple-system,sans-serif}
@@ -210,100 +218,59 @@ export default function PaginaSEO() {
         .tag-link:hover{background:${COR};color:#fff}
       `}</style>
 
-      {/* HEADER */}
-      <header style={{background:COR,position:'sticky',top:0,zIndex:200}}>
-        <div className="wrap" style={{padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <Link href="/" style={{textDecoration:'none'}}>
-            <span style={{color:'#fff',fontSize:'20px',fontWeight:800}}>VipAcompanhante</span>
+      <header style={{ background: COR, position: 'sticky', top: 0, zIndex: 200 }}>
+        <div className="wrap" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <span style={{ color: '#fff', fontSize: '20px', fontWeight: 800 }}>VipAcompanhante</span>
           </Link>
-          <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
-            <Link href="/cadastro" style={{background:'#fff',color:COR,padding:'8px 14px',borderRadius:'6px',textDecoration:'none',fontSize:'13px',fontWeight:700}}>
-              Publicar Anúncio
-            </Link>
-          </div>
+          <Link href="/cadastro" style={{ background: '#fff', color: COR, padding: '8px 14px', borderRadius: '6px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>
+            Publicar Anúncio
+          </Link>
         </div>
       </header>
 
-      <div className="wrap" style={{padding:'20px 16px 40px'}}>
-        {/* Breadcrumb */}
+      <div className="wrap" style={{ padding: '20px 16px 40px' }}>
         <div className="breadcrumb">
           <Link href="/">Início</Link>
           <span>›</span>
-          <span>{info.titulo}</span>
+          <span>{parsed.titulo}</span>
         </div>
-        
-        {/* Voltar */}
-        <Link href="/" style={{display:'inline-flex',alignItems:'center',gap:'6px',color:COR,textDecoration:'none',marginBottom:'16px',fontSize:'14px'}}>
+
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: COR, textDecoration: 'none', marginBottom: '16px', fontSize: '14px' }}>
           <ArrowLeft size={16} /> Voltar
         </Link>
-        
-        {/* Título SEO */}
-        <h1 style={{fontSize:'24px',fontWeight:800,color:'#222',marginBottom:'8px'}}>
-          {info.titulo}
-        </h1>
-        <p style={{color:'#666',fontSize:'14px',marginBottom:'20px'}}>
-          {perfis.length > 0 ? `${perfis.length}+ anúncios encontrados` : 'Carregando...'}
+
+        <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#222', marginBottom: '8px' }}>{parsed.titulo}</h1>
+        <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+          {perfis.length > 0 ? `${perfis.length}+ anúncios encontrados` : 'Nenhum anúncio encontrado'}
         </p>
 
-        {carregando ? (
-          <div style={{textAlign:'center',padding:'50px',color:'#999'}}>Carregando...</div>
-        ) : perfis.length === 0 ? (
-          <div style={{textAlign:'center',padding:'50px'}}>
-            <p style={{color:'#666',marginBottom:'12px'}}>Nenhuma acompanhante encontrada com esses critérios.</p>
-            <Link href="/" style={{color:COR,fontWeight:700}}>Ver todas</Link>
+        {perfis.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <p style={{ color: '#666', marginBottom: '12px' }}>Nenhuma acompanhante encontrada com esses critérios.</p>
+            <Link href="/" style={{ color: COR, fontWeight: 700 }}>Ver todas</Link>
           </div>
         ) : (
-          <>
-            <div className="grid">
-              {perfis.map((p: any) => (
-                <Link key={p.id} href={`/acompanhante/${p.slug}`} className="card">
-                  <div style={{position:'relative',aspectRatio:'3/4',background:'#1a1a1a',overflow:'hidden'}}>
-                    {p.foto_capa && <img src={p.foto_capa} alt={p.nome} style={{width:'100%',height:'100%',objectFit:'cover'}}/>}
-                    <div style={{position:'absolute',top:'6px',left:'6px',display:'flex',flexDirection:'column',gap:'3px'}}>
-                      {p.plano==='super_vip' && <span className="badge-svip">★ SUPER VIP</span>}
-                      {p.plano==='vip' && <span className="badge-vip">◆ VIP</span>}
-                      {p.verificado && <span className="badge-verificado">✓ Verificada</span>}
-                    </div>
-                    <div style={{position:'absolute',top:'6px',right:'6px',background:'rgba(0,0,0,.6)',color:'#fff',borderRadius:'4px',padding:'2px 6px',fontSize:'10px',display:'flex',alignItems:'center',gap:'3px'}}>
-                      <Camera size={10}/> {Math.max((p.fotos||[]).length,1)}
-                    </div>
-                    <div style={{position:'absolute',bottom:0,left:0,right:0,background:`linear-gradient(transparent,${COR}ee)`,padding:'24px 8px 8px'}}>
-                      <h3 style={{color:'#fff',fontSize:'14px',fontWeight:700,marginBottom:'2px'}}>{p.nome}</h3>
-                      <div style={{color:'rgba(255,255,255,.9)',fontSize:'11px',display:'flex',alignItems:'center',gap:'3px'}}>
-                        <MapPin size={10}/> {p.bairro ? `${p.bairro}, ` : ''}{p.cidade}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            {temMais && (
-              <button className="load-more" onClick={() => { const np = pagina+1; setPagina(np); buscarPerfis(np) }}>
-                Ver mais
-              </button>
-            )}
-          </>
+          <CategoriaCliente perfisIniciais={perfis} filtros={parsed.filtros} estado={parsed.estado} />
         )}
-        
-        {/* Texto SEO */}
+
         <div className="seo-text">
-          <h2>{info.titulo}</h2>
-          <p>{info.descricao}</p>
+          <h2>{parsed.titulo}</h2>
+          <p>{parsed.descricao}</p>
           <p>
-            Navegue pelos perfis completos com fotos, vídeos e informações detalhadas. 
+            Navegue pelos perfis completos com fotos, vídeos e informações detalhadas.
             Entre em contato diretamente pelo WhatsApp ou telefone.
           </p>
-          
-          {/* Tags relacionadas */}
+
           <div className="tags-relacionadas">
-            <Link href="/c/loiras-sp" className="tag-link">Loiras SP</Link>
-            <Link href="/c/morenas-rj" className="tag-link">Morenas RJ</Link>
-            <Link href="/c/ruivas-mg" className="tag-link">Ruivas MG</Link>
-            <Link href="/c/com-local-sp" className="tag-link">Com Local SP</Link>
-            <Link href="/c/verificadas-rj" className="tag-link">Verificadas RJ</Link>
-            <Link href="/c/super-vip-sp" className="tag-link">Super VIP SP</Link>
-            <Link href="/c/negras-ba" className="tag-link">Negras BA</Link>
-            <Link href="/c/asiaticas-sp" className="tag-link">Asiáticas SP</Link>
+            <Link href="/c/loiras-sp/" className="tag-link">Loiras SP</Link>
+            <Link href="/c/morenas-rj/" className="tag-link">Morenas RJ</Link>
+            <Link href="/c/ruivas-mg/" className="tag-link">Ruivas MG</Link>
+            <Link href="/c/com-local-sp/" className="tag-link">Com Local SP</Link>
+            <Link href="/c/verificadas-rj/" className="tag-link">Verificadas RJ</Link>
+            <Link href="/c/super-vip-sp/" className="tag-link">Super VIP SP</Link>
+            <Link href="/c/negras-ba/" className="tag-link">Negras BA</Link>
+            <Link href="/c/asiaticas-sp/" className="tag-link">Asiáticas SP</Link>
           </div>
         </div>
       </div>

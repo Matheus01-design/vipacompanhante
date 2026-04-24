@@ -162,7 +162,7 @@ export default function AdminDenuncias() {
                   <strong style={{ fontSize: '15px' }}>{d.acompanhante?.nome || 'Perfil removido'}</strong>
                   {d.acompanhante && (
                     <Link 
-                      href={`/acompanhante/${d.acompanhante.slug}`} 
+                      href={`/acompanhante/${d.acompanhante.slug}/`} 
                       target="_blank"
                       style={{ color: COR, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
                     >

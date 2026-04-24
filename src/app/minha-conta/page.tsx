@@ -772,7 +772,7 @@ export default function MinhaContaPage() {
         </div>
 
         {/* VER PERFIL */}
-        <Link href={`/acompanhante/${perfil.slug}`} className="ver-perfil">
+        <Link href={`/acompanhante/${perfil.slug}/`} className="ver-perfil">
           <Eye size={16} style={{verticalAlign:'middle',marginRight:'8px'}} />
           Ver meu perfil público
         </Link>

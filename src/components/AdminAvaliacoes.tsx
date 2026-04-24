@@ -257,7 +257,7 @@ export default function AdminAvaliacoes() {
                   <div className="avaliacao-acoes">
                     {av.acompanhante?.slug && (
                       <a 
-                        href={`/acompanhante/${av.acompanhante.slug}`}
+                        href={`/acompanhante/${av.acompanhante.slug}/`}
                         target="_blank"
                         className="btn-acao btn-ver"
                       >

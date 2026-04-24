@@ -323,7 +323,7 @@ export default async function CidadePage({ params, searchParams }: Props) {
           <>
             <div className="grid" style={{marginBottom:'20px'}}>
               {(perfis || []).map(p => (
-                <Link key={p.id} href={`/acompanhante/${p.slug}`} className="card">
+                <Link key={p.id} href={`/acompanhante/${p.slug}/`} className="card">
                   <div style={{position:'relative',width:'100%',aspectRatio:'3/4',background:'#1a1a1a',overflow:'hidden'}}>
                     {p.foto_capa
                       ? <img src={p.foto_capa} alt={p.nome} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>

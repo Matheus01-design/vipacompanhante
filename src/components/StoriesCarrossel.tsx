@@ -474,7 +474,7 @@ export default function StoriesCarrossel() {
 
             {/* Link para perfil */}
             <a 
-              href={`/acompanhante/${storyAberto.acompanhante.slug}`}
+              href={`/acompanhante/${storyAberto.acompanhante.slug}/`}
               className="story-link"
               onClick={() => fecharStory()}
             >

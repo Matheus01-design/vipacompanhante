@@ -469,7 +469,7 @@ export default function AdminPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                           <strong style={{ fontSize: '1rem' }}>{d.acompanhante?.nome || 'Perfil removido'}</strong>
                           {d.acompanhante && (
-                            <Link href={`/acompanhante/${d.acompanhante.slug}`} target="_blank" style={{ color: '#8B0000', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem' }}>
+                            <Link href={`/acompanhante/${d.acompanhante.slug}/`} target="_blank" style={{ color: '#8B0000', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem' }}>
                               Ver <ExternalLink size={12} />
                             </Link>
                           )}
@@ -839,7 +839,7 @@ export default function AdminPage() {
                           <td style={s.td}><span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>{new Date(p.criado_em).toLocaleDateString('pt-BR')}</span></td>
                           <td style={s.td}>
                             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                              {p.slug && <Link href={`/acompanhante/${p.slug}`} target="_blank" style={{ ...s.btnVerde, textDecoration: 'none' }}><Eye size={11} /> Ver</Link>}
+                              {p.slug && <Link href={`/acompanhante/${p.slug}/`} target="_blank" style={{ ...s.btnVerde, textDecoration: 'none' }}><Eye size={11} /> Ver</Link>}
                               {(aba === 'pendentes' || aba === 'suspensos') && <button onClick={() => aprovar(p.id)} disabled={processando === p.id} style={s.btnVerde}><CheckCircle size={11} /> Aprovar</button>}
                               {aba === 'pendentes' && <button onClick={() => rejeitar(p.id)} disabled={processando === p.id} style={s.btnVermelho}><XCircle size={11} /> Rejeitar</button>}
                               {aba === 'ativos' && (

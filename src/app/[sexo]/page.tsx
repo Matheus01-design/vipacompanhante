@@ -147,7 +147,7 @@ export default async function ListagemPage({ params, searchParams }: Props) {
               const badgeLabel = a.plano === 'super_vip' ? 'Super VIP' : a.plano === 'vip' ? 'VIP' : null
               const badgeColor = a.plano === 'super_vip' ? '#d4af37' : '#c0c0c0'
               return (
-                <Link key={a.id} href={`/acompanhante/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link key={a.id} href={`/acompanhante/${a.slug}/`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <article style={{
                     border: `1px solid ${a.plano === 'super_vip' ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.07)'}`,
                     borderRadius: '4px', overflow: 'hidden',
