@@ -69,11 +69,35 @@ function verificarRedirectAntigo(pathname: string): string | null {
       'mulheres', 'homens', 'trans', 'acompanhante',
       'admin', 'login', 'cadastro', 'planos',
       'minha-conta', 'buscar', 'recuperar-senha',
-      'luna', 'blog' // ← ADICIONADO: Luna e Blog
+      'luna', 'blog', 'c' // ← inclui blog, luna, categorias
     ]
     if (!rotasValidas.includes(possibleCity)) {
       return '/'
     }
+  }
+
+  // REDIRECT 7: Duplo slug WP concatenado na raiz (formato muito antigo)
+  // Ex: /julia-mulher-acompanhante-em-cidade-x/ana-mulher-acompanhante-em-cidade-x/
+  const duploSlugMatch = pathname.match(
+    /^\/[a-z][a-z0-9-]*-(?:mulher|homem|trans)-acompanhante-em-[a-z0-9-]+\/([a-z][a-z0-9-]*)-(mulher|homem|trans)-acompanhante-em-([a-z0-9-]+?)(?:-([a-z]{2}))?\/?$/i
+  )
+  if (duploSlugMatch) {
+    const [, , sexo, cidadeOuLocal, possivelEstado] = duploSlugMatch
+    const sexoPath = sexo === 'mulher' ? 'mulheres' : sexo === 'homem' ? 'homens' : 'trans'
+    if (possivelEstado) {
+      return `/${sexoPath}/${possivelEstado}/${cidadeOuLocal}/`
+    }
+    return `/${sexoPath}/`
+  }
+
+  // REDIRECT 8: URLs com espaço/acento decodificados (encoding quebrado)
+  // Ex: /mulheres/são lourenço/... ou /mulheres/novo horizonte/
+  if (/\s/.test(pathname) || /[^\x00-\x7F]/.test(pathname)) {
+    const secaoMatch = pathname.match(/^\/(mulheres|homens|trans|blog)\//i)
+    if (secaoMatch) {
+      return `/${secaoMatch[1].toLowerCase()}/`
+    }
+    return '/'
   }
 
   return null
