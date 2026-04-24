@@ -102,6 +102,41 @@ export default async function PerfilPage({ params }: Props) {
     ],
   }
 
+  const schemaService: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `Acompanhante ${perfil.nome}`,
+    description: perfil.descricao || `Acompanhante ${perfil.nome} em ${perfil.cidade} - ${estadoNome}`,
+    serviceType: 'Acompanhante',
+    image: perfil.foto_capa,
+    url,
+    provider: {
+      '@type': 'Person',
+      name: perfil.nome,
+      ...(perfil.foto_capa && { image: perfil.foto_capa }),
+    },
+    areaServed: {
+      '@type': 'City',
+      name: perfil.cidade,
+      containedInPlace: {
+        '@type': 'AdministrativeArea',
+        name: estadoNome,
+        containedInPlace: { '@type': 'Country', name: 'Brasil' },
+      },
+    },
+  }
+
+  if (perfil.preco_numero && perfil.preco_numero > 0) {
+    schemaService.offers = {
+      '@type': 'Offer',
+      price: perfil.preco_numero.toString(),
+      priceCurrency: 'BRL',
+      availability: 'https://schema.org/InStock',
+      url,
+      ...(perfil.preco && { description: perfil.preco }),
+    }
+  }
+
   return (
     <>
       <script
@@ -111,6 +146,10 @@ export default async function PerfilPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaBreadcrumb) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaService) }}
       />
       <PerfilCliente perfilInicial={perfil} />
     </>
