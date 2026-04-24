@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { MapPin, Filter, Shield, Crown, Star, ChevronDown } from 'lucide-react'
 import { getAcompanhantes } from '@/lib/queries'
 import { ESTADOS_BR, type Sexo } from '@/types'
@@ -155,7 +156,7 @@ export default async function ListagemPage({ params, searchParams }: Props) {
                   }}>
                     <div style={{ position: 'relative', aspectRatio: '3/4', background: '#151515' }}>
                       {a.foto_capa ? (
-                        <img src={a.foto_capa} alt={a.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <Image src={a.foto_capa} alt={a.nome} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" style={{ objectFit: 'cover' }} />
                       ) : (
                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.1)', fontSize: '2.5rem' }}>✦</div>
                       )}

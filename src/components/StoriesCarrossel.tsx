@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { X, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react'
 
@@ -383,7 +384,7 @@ export default function StoriesCarrossel() {
               <div style={{position:'relative'}}>
                 <div className={`story-avatar ${acomp.visto ? 'visto' : ''}`}>
                   <div className="story-avatar-inner">
-                    <img src={acomp.foto_capa} alt={acomp.nome} />
+                    <Image src={acomp.foto_capa} alt={acomp.nome} width={62} height={62} style={{width:'100%',height:'100%',objectFit:'cover'}} />
                   </div>
                 </div>
                 {acomp.plano !== 'gratis' && (

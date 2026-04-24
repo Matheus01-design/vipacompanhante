@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import {
   MapPin, Phone, MessageCircle, Heart, Share2, ChevronLeft, ChevronRight,
@@ -267,7 +268,7 @@ export default function PerfilCliente({ perfilInicial }: Props) {
           <div>
             <div className="card" style={{ marginBottom: '20px' }}>
               <div className="galeria" onClick={() => setMostrarGaleria(true)}>
-                {fotos[fotoAtual] && <img src={fotos[fotoAtual]} alt={perfil.nome} />}
+                {fotos[fotoAtual] && <Image src={fotos[fotoAtual]} alt={perfil.nome} fill priority sizes="(max-width: 768px) 100vw, 50vw" style={{objectFit:'cover'}} />}
                 <div className="badges">
                   {perfil.plano === 'super_vip' && <span className="badge badge-svip">★ SUPER VIP</span>}
                   {perfil.plano === 'vip' && <span className="badge badge-vip">◆ VIP</span>}

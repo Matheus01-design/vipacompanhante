@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { MapPin, Camera, ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -326,7 +327,7 @@ export default async function CidadePage({ params, searchParams }: Props) {
                 <Link key={p.id} href={`/acompanhante/${p.slug}/`} className="card">
                   <div style={{position:'relative',width:'100%',aspectRatio:'3/4',background:'#1a1a1a',overflow:'hidden'}}>
                     {p.foto_capa
-                      ? <img src={p.foto_capa} alt={p.nome} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
+                      ? <Image src={p.foto_capa} alt={p.nome} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" style={{objectFit:'cover'}}/>
                       : <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',color:'#444',fontSize:'36px'}}>📷</div>
                     }
                     <div style={{position:'absolute',top:'10px',right:'10px',background:COR,color:'#fff',borderRadius:'20px',padding:'4px 10px',display:'flex',alignItems:'center',gap:'4px',fontSize:'13px',fontWeight:700}}>

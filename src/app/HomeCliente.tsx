@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { MapPin, Camera, X, ChevronDown, ChevronRight, ChevronLeft, MessageCircleHeart, Search, Navigation, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ESTADOS_BR } from '@/types'
@@ -873,7 +874,7 @@ export default function HomeCliente({ perfisIniciais, superVipsIniciais }: Props
                   <div style={{position:'relative'}}>
                     <div className={`story-avatar ${acomp.visto ? 'visto' : ''}`}>
                       <div className="story-avatar-inner">
-                        <img src={acomp.foto_capa} alt={acomp.nome} />
+                        <Image src={acomp.foto_capa} alt={acomp.nome} width={62} height={62} style={{width:'100%',height:'100%',objectFit:'cover'}} />
                       </div>
                     </div>
                     {acomp.plano !== 'gratis' && (
@@ -917,7 +918,7 @@ export default function HomeCliente({ perfisIniciais, superVipsIniciais }: Props
               {superVips.map((p: any) => (
                 <Link key={p.id} href={`/acompanhante/${p.slug}/`} className="svip-card">
                   <div style={{position:'relative',aspectRatio:'3/4',background:'#111',borderRadius:'8px',overflow:'hidden',border:'2px solid #d4af37'}}>
-                    {p.foto_capa && <img src={p.foto_capa} alt={p.nome} style={{width:'100%',height:'100%',objectFit:'cover'}}/>}
+                    {p.foto_capa && <Image src={p.foto_capa} alt={p.nome} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" style={{objectFit:'cover'}}/>}
                     <div style={{position:'absolute',top:'6px',left:'6px'}}><span className="badge-svip">★ SUPER VIP</span></div>
                     {p.distancia && <div style={{position:'absolute',top:'26px',left:'6px'}}><span className="badge-dist">📍 {p.distancia.toFixed(0)}km</span></div>}
                     <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(0,0,0,.85))',padding:'20px 8px 8px'}}>
@@ -957,7 +958,7 @@ export default function HomeCliente({ perfisIniciais, superVipsIniciais }: Props
               {perfis.map((p: any) => (
                 <Link key={p.id} href={`/acompanhante/${p.slug}/`} className="card">
                   <div style={{position:'relative',aspectRatio:'3/4',background:'#1a1a1a',overflow:'hidden'}}>
-                    {p.foto_capa && <img src={p.foto_capa} alt={p.nome} style={{width:'100%',height:'100%',objectFit:'cover'}}/>}
+                    {p.foto_capa && <Image src={p.foto_capa} alt={p.nome} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" style={{objectFit:'cover'}}/>}
                     <div style={{position:'absolute',top:'6px',left:'6px',display:'flex',flexDirection:'column',gap:'3px'}}>
                       {p.plano==='super_vip' && <span className="badge-svip">★ SUPER VIP</span>}
                       {p.plano==='vip' && <span className="badge-vip">◆ VIP</span>}

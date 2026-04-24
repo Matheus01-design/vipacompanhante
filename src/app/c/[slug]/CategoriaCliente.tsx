@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { MapPin, Camera } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -74,7 +75,7 @@ export default function CategoriaCliente({ perfisIniciais, filtros, estado }: Pr
         {perfis.map((p: any) => (
           <Link key={p.id} href={`/acompanhante/${p.slug}/`} className="card">
             <div style={{ position: 'relative', aspectRatio: '3/4', background: '#1a1a1a', overflow: 'hidden' }}>
-              {p.foto_capa && <img src={p.foto_capa} alt={p.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+              {p.foto_capa && <Image src={p.foto_capa} alt={p.nome} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" style={{ objectFit: 'cover' }} />}
               <div style={{ position: 'absolute', top: '6px', left: '6px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                 {p.plano === 'super_vip' && <span className="badge-svip">★ SUPER VIP</span>}
                 {p.plano === 'vip' && <span className="badge-vip">◆ VIP</span>}
