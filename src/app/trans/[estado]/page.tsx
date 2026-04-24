@@ -59,9 +59,9 @@ export default async function CidadePage({ params, searchParams }: Props) {
       .not('bairro', 'is', null)
   ])
 
-  if (!perfis || perfis.length === 0) notFound()
+  // pagina permanece 200 mesmo sem perfis ativos (URL valida do sitemap)
 
-  const cidadeNome = perfis[0]?.cidade || formatarNome(params.cidade)
+  const cidadeNome = (perfis || [])[0]?.cidade || estadoNome
 
   const contagemBairros: Record<string, number> = {}
   ;(todosBairros || []).forEach(p => { 

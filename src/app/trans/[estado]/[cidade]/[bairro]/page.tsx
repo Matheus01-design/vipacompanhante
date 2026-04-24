@@ -99,7 +99,7 @@ export default async function BairroPage({ params, searchParams }: Props) {
     perfis = data || []
     count = total
 
-    if (!perfis || perfis.length === 0) notFound()
+    // pagina permanece 200 mesmo sem perfis ativos (URL valida do sitemap)
 
     cidadeNome = perfis[0]?.cidade || cidadeNome
     bairroNome = perfis[0]?.bairro || bairroNome
