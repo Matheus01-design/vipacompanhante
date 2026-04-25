@@ -12,31 +12,27 @@ const TIPO = 'Trans Acompanhantes'
 const ROTA = 'trans'
 
 interface Props {
-  params: { estado: string; cidade: string }
+  params: { estado: string }
   searchParams: { pagina?: string }
 }
 
-function formatarNome(slug: string): string {
-  return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-}
-
-function slugBairro(bairro: string) {
-  return bairro.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+function slugCidade(cidade: string) {
+  return cidade.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const sigla = params.estado.toUpperCase()
   const estadoNome = ESTADOS_BR[sigla] || sigla
-  const cidadeNome = formatarNome(params.cidade)
   return {
-    title: `${TIPO} em ${cidadeNome} - ${estadoNome}`,
-    description: `Encontre ${TIPO.toLowerCase()} em ${cidadeNome}, ${estadoNome}. Perfis verificados com fotos reais.`,
+    title: `${TIPO} no ${estadoNome}`,
+    description: `Encontre ${TIPO.toLowerCase()} no ${estadoNome}. Perfis verificados com fotos reais.`,
+    alternates: { canonical: `https://www.vipacompanhante.com/${ROTA}/${params.estado.toLowerCase()}/` },
   }
 }
 
-export default async function CidadePage({ params, searchParams }: Props) {
+export default async function EstadoPage({ params, searchParams }: Props) {
   const sigla = params.estado.toUpperCase()
   const estadoNome = ESTADOS_BR[sigla]
   if (!estadoNome) notFound()
@@ -45,29 +41,22 @@ export default async function CidadePage({ params, searchParams }: Props) {
   const porPagina = 24
   const supabase = await createClient()
 
-  const [{ data: perfis, count }, { data: todosBairros }] = await Promise.all([
+  const [{ data: perfis, count }, { data: todasCidades }] = await Promise.all([
     supabase.from('acompanhantes')
-      .select('id,slug,nome,descricao,cidade,bairro,estado,foto_capa,fotos,plano', { count: 'exact' })
+      .select('id,slug,nome,descricao,cidade,estado,foto_capa,fotos,plano', { count: 'exact' })
       .eq('status', 'ativo').eq('sexo', SEXO).eq('estado', sigla)
-      .ilike('cidade', formatarNome(params.cidade))
       .not('foto_capa', 'is', null)
       .order('plano', { ascending: false }).order('id', { ascending: false })
       .range((pagina - 1) * porPagina, pagina * porPagina - 1),
     supabase.from('acompanhantes')
-      .select('bairro').eq('status', 'ativo').eq('sexo', SEXO).eq('estado', sigla)
-      .ilike('cidade', formatarNome(params.cidade))
-      .not('bairro', 'is', null)
+      .select('cidade').eq('status', 'ativo').eq('sexo', SEXO).eq('estado', sigla)
   ])
 
   // pagina permanece 200 mesmo sem perfis ativos (URL valida do sitemap)
 
-  const cidadeNome = (perfis || [])[0]?.cidade || estadoNome
-
-  const contagemBairros: Record<string, number> = {}
-  ;(todosBairros || []).forEach(p => { 
-    if (p.bairro) contagemBairros[p.bairro] = (contagemBairros[p.bairro] || 0) + 1 
-  })
-  const bairrosOrdenados = Object.entries(contagemBairros).sort((a, b) => b[1] - a[1]).slice(0, 30)
+  const contagemCidades: Record<string, number> = {}
+  ;(todasCidades || []).forEach(p => { if (p.cidade) contagemCidades[p.cidade] = (contagemCidades[p.cidade] || 0) + 1 })
+  const cidadesOrdenadas = Object.entries(contagemCidades).sort((a, b) => b[1] - a[1]).slice(0, 30)
   const totalPaginas = Math.ceil((count || 0) / porPagina)
 
   return (
@@ -103,24 +92,22 @@ export default async function CidadePage({ params, searchParams }: Props) {
         <p style={{fontSize:'13px',color:'#888',marginBottom:'12px'}}>
           <Link href="/" style={{color:'#888',textDecoration:'none'}}>Início</Link>
           {' / '}
-          <Link href={`/${ROTA}/${params.estado}/`} style={{color:'#888',textDecoration:'none'}}>{estadoNome}</Link>
-          {' / '}
-          <span style={{color:COR,fontWeight:600}}>{cidadeNome}</span>
+          <span style={{color:COR,fontWeight:600}}>{estadoNome}</span>
         </p>
 
         <h1 style={{fontSize:'22px',fontWeight:800,color:'#222',marginBottom:'8px'}}>
-          {TIPO} em {cidadeNome}
+          {TIPO} no {estadoNome}
         </h1>
-        <p style={{fontSize:'14px',color:'#666',marginBottom:'20px'}}>{count || 0} perfis em {cidadeNome} - {estadoNome}</p>
+        <p style={{fontSize:'14px',color:'#666',marginBottom:'20px'}}>{count || 0} perfis encontrados</p>
 
-        {bairrosOrdenados.length > 0 && (
+        {cidadesOrdenadas.length > 0 && (
           <div style={{marginBottom:'24px'}}>
-            <h2 style={{fontSize:'15px',fontWeight:700,color:'#333',marginBottom:'10px'}}>Bairros em destaque:</h2>
+            <h2 style={{fontSize:'15px',fontWeight:700,color:'#333',marginBottom:'10px'}}>Cidades em destaque:</h2>
             <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-              {bairrosOrdenados.map(([bairro, qtd]) => (
-                <Link key={bairro} href={`/${ROTA}/${params.estado}/${params.cidade}/${slugBairro(bairro)}/`}
+              {cidadesOrdenadas.map(([cidade, qtd]) => (
+                <Link key={cidade} href={`/${ROTA}/${params.estado}/${slugCidade(cidade)}/`}
                   style={{background:'#fff',border:'1px solid #ddd',borderRadius:'20px',padding:'5px 14px',textDecoration:'none',fontSize:'13px',color:'#333',display:'flex',alignItems:'center',gap:'6px',boxShadow:'0 1px 3px rgba(0,0,0,.08)'}}>
-                  {bairro}
+                  {cidade}
                   <span style={{background:COR,color:'#fff',borderRadius:'10px',padding:'1px 7px',fontSize:'11px',fontWeight:700}}>{qtd}</span>
                 </Link>
               ))}
@@ -148,7 +135,7 @@ export default async function CidadePage({ params, searchParams }: Props) {
                   <h3 style={{color:'#fff',fontSize:'17px',fontWeight:700,marginBottom:'3px'}}>{p.nome}</h3>
                   {p.descricao && <p style={{color:'rgba(255,255,255,.85)',fontSize:'12px',marginBottom:'6px',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical' as any,overflow:'hidden',lineHeight:1.4}}>{p.descricao}</p>}
                   <div style={{display:'flex',alignItems:'center',gap:'4px',color:'rgba(255,255,255,.9)',fontSize:'12px'}}>
-                    <MapPin size={11}/> {p.bairro ? `${p.bairro}, ` : ''}{cidadeNome}
+                    <MapPin size={11}/> {p.cidade} - {p.estado}
                   </div>
                 </div>
               </div>
@@ -167,12 +154,12 @@ export default async function CidadePage({ params, searchParams }: Props) {
         )}
 
         <div style={{background:'#fff',borderRadius:'10px',padding:'20px',boxShadow:'0 1px 4px rgba(0,0,0,.06)'}}>
-          <h2 style={{fontSize:'17px',fontWeight:700,color:'#222',marginBottom:'10px'}}>{TIPO} em {cidadeNome}</h2>
+          <h2 style={{fontSize:'17px',fontWeight:700,color:'#222',marginBottom:'10px'}}>{TIPO} no {estadoNome}</h2>
           <p style={{fontSize:'14px',color:'#555',lineHeight:1.8}}>
-            Encontre as melhores {TIPO.toLowerCase()} em {cidadeNome}, {estadoNome} na VipAcompanhante.
-            São {count || 0} perfis verificados na cidade.
+            Encontre {TIPO.toLowerCase()} no {estadoNome} na VipAcompanhante.
+            São {count || 0} perfis verificados em diversas cidades do estado.
             Todos os perfis possuem fotos reais e contato direto via WhatsApp.
-            {bairrosOrdenados.length > 0 && ` Encontre acompanhantes em ${bairrosOrdenados.slice(0,5).map(([b])=>b).join(', ')} e muito mais.`}
+            {cidadesOrdenadas.length > 0 && ` Encontre acompanhantes em ${cidadesOrdenadas.slice(0,5).map(([c])=>c).join(', ')} e muito mais.`}
           </p>
         </div>
       </div>

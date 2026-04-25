@@ -28,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${TIPO} no ${estadoNome}`,
     description: `Encontre ${TIPO.toLowerCase()} no ${estadoNome}. Perfis verificados com fotos reais.`,
+    alternates: { canonical: `https://www.vipacompanhante.com/${ROTA}/${params.estado.toLowerCase()}/` },
   }
 }
 

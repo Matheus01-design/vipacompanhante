@@ -30,11 +30,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const estadoNome = ESTADOS_BR[sigla] || sigla
   const cidadeNome = formatarNome(params.cidade)
   
+  const canonical = `https://www.vipacompanhante.com/trans/${params.estado.toLowerCase()}/${params.cidade}/${params.bairro}/`
+
   const atendimento = ATENDIMENTOS[params.bairro]
   if (atendimento) {
     return {
       title: `Acompanhantes Trans que ${atendimento.label} em ${cidadeNome} - ${estadoNome}`,
       description: `Encontre acompanhantes trans que ${atendimento.label.toLowerCase()} em ${cidadeNome}, ${estadoNome}. Perfis verificados com fotos reais.`,
+      alternates: { canonical },
     }
   }
 
@@ -42,6 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${TIPO} em ${bairroNome}, ${cidadeNome} - ${estadoNome}`,
     description: `Encontre ${TIPO.toLowerCase()} em ${bairroNome}, ${cidadeNome} - ${estadoNome}. Perfis verificados com fotos reais.`,
+    alternates: { canonical },
   }
 }
 

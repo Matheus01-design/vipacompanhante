@@ -17,6 +17,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   return {
     title: `${sexoLabel}${cidadeLabel}${estadoLabel}`,
     description: `Encontre ${sexoLabel.toLowerCase()}${cidadeLabel}${estadoLabel}. Perfis verificados, fotos reais e total discrição.`,
+    alternates: { canonical: `https://www.vipacompanhante.com/${params.sexo}/` },
   }
 }
 

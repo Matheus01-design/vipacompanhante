@@ -182,6 +182,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${TIPO} em ${cidadeNome} - ${sigla}`,
     description: `Encontre ${TIPO.toLowerCase()} em ${cidadeNome} - ${estadoNome}. Perfis verificados com fotos reais e contato direto via WhatsApp.`,
+    alternates: { canonical: `https://www.vipacompanhante.com/${ROTA}/${params.estado.toLowerCase()}/${params.cidade}/` },
   }
 }
 
