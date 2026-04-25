@@ -14,10 +14,12 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const sexoLabel = params.sexo === 'mulheres' ? 'Mulheres Acompanhantes' : 'Homens Acompanhantes'
   const estadoLabel = searchParams.estado ? ` no ${ESTADOS_BR[searchParams.estado] || searchParams.estado}` : ' no Brasil'
   const cidadeLabel = searchParams.cidade ? ` em ${searchParams.cidade}` : ''
+  const pagina = parseInt(searchParams.pagina || '1')
   return {
     title: `${sexoLabel}${cidadeLabel}${estadoLabel}`,
     description: `Encontre ${sexoLabel.toLowerCase()}${cidadeLabel}${estadoLabel}. Perfis verificados, fotos reais e total discrição.`,
     alternates: { canonical: `https://www.vipacompanhante.com/${params.sexo}/` },
+    robots: pagina > 1 ? { index: false, follow: true } : undefined,
   }
 }
 

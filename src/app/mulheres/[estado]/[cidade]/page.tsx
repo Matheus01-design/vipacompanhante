@@ -175,14 +175,16 @@ function gerarSchemaFAQ(perguntas: { pergunta: string; resposta: string }[]) {
   }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const sigla = params.estado.toUpperCase()
   const estadoNome = ESTADOS_BR[sigla] || sigla
   const cidadeNome = formatarCidade(params.cidade)
+  const pagina = parseInt(searchParams.pagina || '1')
   return {
     title: `${TIPO} em ${cidadeNome} - ${sigla}`,
     description: `Encontre ${TIPO.toLowerCase()} em ${cidadeNome} - ${estadoNome}. Perfis verificados com fotos reais e contato direto via WhatsApp.`,
     alternates: { canonical: `https://www.vipacompanhante.com/${ROTA}/${params.estado.toLowerCase()}/${params.cidade}/` },
+    robots: pagina > 1 ? { index: false, follow: true } : undefined,
   }
 }
 

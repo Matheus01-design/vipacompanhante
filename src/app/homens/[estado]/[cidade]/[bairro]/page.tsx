@@ -25,11 +25,13 @@ function formatarNome(slug: string): string {
   return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const sigla = params.estado.toUpperCase()
   const estadoNome = ESTADOS_BR[sigla] || sigla
   const cidadeNome = formatarNome(params.cidade)
-  
+  const pagina = parseInt(searchParams.pagina || '1')
+  const robotsTag = pagina > 1 ? { index: false, follow: true } : undefined
+
   const canonical = `https://www.vipacompanhante.com/homens/${params.estado.toLowerCase()}/${params.cidade}/${params.bairro}/`
 
   const atendimento = ATENDIMENTOS[params.bairro]
@@ -38,6 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `Acompanhantes Homens que ${atendimento.label} em ${cidadeNome} - ${estadoNome}`,
       description: `Encontre acompanhantes homens que ${atendimento.label.toLowerCase()} em ${cidadeNome}, ${estadoNome}. Perfis verificados com fotos reais.`,
       alternates: { canonical },
+      robots: robotsTag,
     }
   }
 
@@ -46,6 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${TIPO} em ${bairroNome}, ${cidadeNome} - ${estadoNome}`,
     description: `Encontre ${TIPO.toLowerCase()} em ${bairroNome}, ${cidadeNome} - ${estadoNome}. Perfis verificados com fotos reais.`,
     alternates: { canonical },
+    robots: robotsTag,
   }
 }
 

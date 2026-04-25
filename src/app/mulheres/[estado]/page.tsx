@@ -22,13 +22,15 @@ function slugCidade(cidade: string) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const sigla = params.estado.toUpperCase()
   const estadoNome = ESTADOS_BR[sigla] || sigla
+  const pagina = parseInt(searchParams.pagina || '1')
   return {
     title: `${TIPO} no ${estadoNome}`,
     description: `Encontre ${TIPO.toLowerCase()} no ${estadoNome}. Perfis verificados com fotos reais.`,
     alternates: { canonical: `https://www.vipacompanhante.com/${ROTA}/${params.estado.toLowerCase()}/` },
+    robots: pagina > 1 ? { index: false, follow: true } : undefined,
   }
 }
 
