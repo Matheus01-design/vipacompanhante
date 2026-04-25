@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { MapPin, Camera, ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ESTADOS_BR } from '@/types'
+import ListagemVazia from '@/components/ListagemVazia'
 
 const COR = '#8B0000'
 const SEXO = 'mulher'
@@ -317,12 +318,14 @@ export default async function CidadePage({ params, searchParams }: Props) {
         <p style={{fontSize:'14px',color:'#666',marginBottom:'20px'}}>{count || 0} perfis encontrados</p>
 
         {(perfis || []).length === 0 ? (
-          <div style={{textAlign:'center',padding:'60px 20px',background:'#fff',borderRadius:'12px'}}>
-            <p style={{fontSize:'16px',color:'#666',marginBottom:'16px'}}>Nenhuma acompanhante encontrada em {cidadeNome}.</p>
-            <Link href={`/${ROTA}/${params.estado}/`} style={{color:COR,fontWeight:700,textDecoration:'none',border:`1px solid ${COR}`,padding:'10px 24px',borderRadius:'8px',display:'inline-block'}}>
-              Ver todas do {estadoNome}
-            </Link>
-          </div>
+          <ListagemVazia
+            tipo={TIPO}
+            local={cidadeNome}
+            descricaoLocal={`${cidadeNome}, ${estadoNome}`}
+            cor={COR}
+            voltarHref={`/${ROTA}/${params.estado}/`}
+            voltarLabel={`${TIPO} no ${estadoNome}`}
+          />
         ) : (
           <>
             <div className="grid" style={{marginBottom:'20px'}}>

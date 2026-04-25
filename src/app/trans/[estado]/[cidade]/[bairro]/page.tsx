@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { MapPin, Camera, ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ESTADOS_BR } from '@/types'
+import ListagemVazia from '@/components/ListagemVazia'
 
 const COR = '#9b59b6'
 const SEXO = 'trans'
@@ -191,12 +192,14 @@ export default async function BairroPage({ params, searchParams }: Props) {
             ))}
           </div>
         ) : (
-          <div style={{background:'#fff',borderRadius:'10px',padding:'40px 20px',textAlign:'center',marginBottom:'20px'}}>
-            <p style={{color:'#666',fontSize:'16px'}}>Nenhum perfil encontrado.</p>
-            <Link href={`/${ROTA}/${params.estado}/${params.cidade}/`} style={{color:COR,textDecoration:'none',fontWeight:600,marginTop:'12px',display:'inline-block'}}>
-              Ver todos em {cidadeNome}
-            </Link>
-          </div>
+          <ListagemVazia
+            tipo={TIPO}
+            local={bairroNome}
+            descricaoLocal={`${bairroNome}, ${cidadeNome} - ${estadoNome}`}
+            cor={COR}
+            voltarHref={`/${ROTA}/${params.estado}/${params.cidade}/`}
+            voltarLabel={`${TIPO} em ${cidadeNome}`}
+          />
         )}
 
         {totalPaginas > 1 && (

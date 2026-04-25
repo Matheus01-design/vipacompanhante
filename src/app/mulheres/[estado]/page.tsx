@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { MapPin, Camera, ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ESTADOS_BR } from '@/types'
+import ListagemVazia from '@/components/ListagemVazia'
 
 const COR = '#8B0000'
 const SEXO = 'mulher'
@@ -115,8 +116,18 @@ export default async function EstadoPage({ params, searchParams }: Props) {
           </div>
         )}
 
+        {(!perfis || perfis.length === 0) ? (
+          <ListagemVazia
+            tipo={TIPO}
+            local={estadoNome}
+            descricaoLocal={`${estadoNome}, Brasil`}
+            cor={COR}
+            voltarHref="/"
+            voltarLabel="início"
+          />
+        ) : (
         <div className="grid" style={{marginBottom:'20px'}}>
-          {(perfis || []).map(p => (
+          {perfis.map(p => (
             <Link key={p.id} href={`/acompanhante/${p.slug}/`} className="card">
               <div style={{position:'relative',width:'100%',aspectRatio:'3/4',background:'#1a1a1a',overflow:'hidden'}}>
                 {p.foto_capa
@@ -142,6 +153,7 @@ export default async function EstadoPage({ params, searchParams }: Props) {
             </Link>
           ))}
         </div>
+        )}
 
         {totalPaginas > 1 && (
           <div style={{display:'flex',gap:'8px',flexWrap:'wrap',justifyContent:'center',marginBottom:'24px'}}>
